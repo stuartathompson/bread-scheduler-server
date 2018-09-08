@@ -4,6 +4,7 @@ const cors = require('cors')
 const path = require('path')
 const morgan = require('morgan')
 const history = require('connect-history-api-fallback')
+const serveStatic = require('serve-static')
 
 // Passport/authentication
 const passport = require('passport')
@@ -14,11 +15,9 @@ const session = require('express-session')
 const cookieParser = require('cookie-parser')
 
 const app = express();
-const staticFileMiddleware = express.static(path.join(__dirname + '/dist'));
 
-app.use(staticFileMiddleware);
 app.use(history());
-app.use(staticFileMiddleware);
+app.use(serveStatic(__dirname))
 
 app.use(morgan('combined'))
 app.use(bodyParser.json())
