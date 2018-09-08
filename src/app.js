@@ -3,10 +3,22 @@ const bodyParser = require('body-parser')
 const cors = require('cors')
 const morgan = require('morgan')
 
-const app = express()
+// require('./passport');
+const passport = require('passport')
+const LocalStrategy = require('passport-local').Strategy
+const jwt = require('jsonwebtoken')
+const bcrypt = require('bcrypt')
+const session = require('express-session')
+const cookieParser = require('cookie-parser')
+const app = express();
+
 app.use(morgan('combined'))
 app.use(bodyParser.json())
 app.use(cors())
+app.use(cookieParser('$2b$10$7ztOGXwtoFJHIRbGz3GTTedQaadosUxCY0xkRPOh10HHO620VqCB.'));
+app.use(session({ cookie: { maxAge: 60000 }}));
+app.use(passport.initialize())
+app.use(passport.session())
 
 app.use(express.static('stylesheets'))
 
@@ -17,11 +29,167 @@ var RecordChildren = require("../models/record_children");
 var Records = require("../models/records");
 var Users = require("../models/users");
 
-// var Attachments = require("../models/attachments");
-app.get('/records', (req, res) => {
+
+/* - Begin app - */
+
+passport.serializeUser(function(user, done) {
+  done(null, user._id);
+});
+
+passport.deserializeUser(function(userId, done) {
+  User.findById(userId, (err, user) => done(err, user));
+});
+
+const local = new LocalStrategy( (username, password, next) => {
+  console.log('ok, looking?')
+    Users.findOne({ username })
+        .then(user => {
+          console.log('found undersname');
+            if (!user || !user.validPassword(password)) {
+                console.log('fail')
+                next(true, false, {message: 'Incorrect email or password.'});
+            } else {
+              console.log('success, valid')
+
+              next(null, user, {message: 'Logged In Successfully'});
+            }
+       })
+       .catch(err => next(err));
+});
+
+passport.use("local",local);
+
+const loggedInOnly = (req, res, next) => {
+  var token = req.header('Authorization').split(' ')[1];
+  var payload = jwt.decode(token, 'supersecret');
+  if (payload) {
+    // res.send({success: true});
+    // console.log('going next true', next)
+    next(null, req, res)
+  } else {
+    res.send({success: false, redirect: '/login'});
+    // console.log('going next false', next)
+    // next(null, {success: false})
+  }
+};
+
+const loggedOutOnly = (req, res, next) => {
+  if (req.isUnauthenticated()) next();
+  else res.send({success: false, redirect: "/"});
+};
+
+
+/* POST login */
+app.post('/login', function(req, res, next){
+  passport.authenticate('local', function(err, user, info){
+    if(err || !user){
+      res.send({success: false})
+    } else {
+      var token = jwt.sign({ id: user._id }, 'supersecret', {
+        expiresIn: 86400 // expires in 24 hours
+      });
+      res.send({success: true, redirect: '/', token: token})
+    }
+})(req, res, next);
+  console.log('outtie');
+});
+
+// function (req, res, next){
+//   console.log('reached sign in post')
+//   console.log(req.body)
+//   passport.authenticate('local',{session: false}, (err, user, info) => {
+//     console.log('fail??',err, user, info)
+//     if( err || !user ){
+//       return res.status(400).json({
+//         message: 'Your email or password was wrong.',
+//         user: user
+//       });
+//     }
+//
+//     req.login(user, {session: false}, (err) => {
+//       if (err) {
+//         res.send(err);
+//       }
+//
+//       // generate signed json web token
+//       const token = jwt.sign(user, 'your_jwt_secret');
+//       return res.json({user, token});
+//     });
+//   })(req, res);
+// });
+
+app.post("/register", (req, res, next) => {
+  const { username, password } = req.body;
+  Users.create({ username, password })
+    .then(user => {
+      // create a token
+      var token = jwt.sign({ id: user._id }, 'supersecret', {
+        expiresIn: 86400 // expires in 24 hours
+      });
+      res.status(200).send({ success: true, redirect: '/', token: token });
+
+      // req.login(user, err => {
+      //   if (err) next(err);
+      //   else res.redirect("/");
+      // });
+    })
+    .catch(err => {
+      if (err.name === "ValidationError") {
+        req.flash("Sorry, that email is already registered.");
+        res.redirect("/register");
+      } else next(err);
+    });
+});
+
+app.all("/logout", function(req, res) {
+  req.logout();
+  res.send({success: true, redirect: '/login'})
+});
+
+app.all("/login", function(req, res) {
+  console.log('Logging in....')
+});
+
+app.post("/auth", loggedInOnly, function(req, res) {
+  console.log('Made it to auth ....')
+  res.send({success: true})
+});
+
+
+// app.post('/register', function(req, res, next) {
+//   bcrypt.genSalt(10, function(err, salt){
+//     if (err) return next(err);
+//     bcrypt.hash(req.body.password, salt, function(err, hash) {
+//
+//       var newUser = new Users({
+//         username: req.body.username,
+//         password: hash
+//       });
+//
+//       newUser.save(function (error) {
+//         if (error) {
+//           console.log(error)
+//         }
+//         res.send({
+//           success: true
+//         });
+//       });
+//     });
+//   });
+// });
+
+// const auth = require('../routes/auth');
+const user = require('../routes/user');
+
+// app.use('/auth', auth);
+// app.use('/', passport.authenticate('jwt', {session: false}), user);
+
+
+app.get('/records', loggedInOnly, (req, res) => {
   Records.find({}, 'record_id description date notes', function (error, records) {
 	  if (error) { console.error('ERROR',error); }
 	  res.send({
+      success: true,
 			records: records
 		})
 	}).sort({date:-1}).limit(10)
@@ -32,6 +200,7 @@ app.post('/search', (req, res) => {
   Records.find(query, 'record_id description date notes', function (error, records) {
 	  if (error) { console.error('ERROR',error); }
 	  res.send({
+      success: true,
 			records: records
 		})
 	}).sort({date:-1})
@@ -124,12 +293,9 @@ app.delete('/records/:id', (req, res) => {
 	})
 })
 
-app.get('/post/:id', (req, res) => {
-	var db = req.db;
-	Post.findById(req.params.id, 'title description', function (error, post) {
-	  if (error) { console.error(error); }
-	  res.send(post)
-	})
-})
+
+app.get('*', function(req, res){
+  res.status(404);
+});
 
 app.listen(process.env.PORT || 8081)
