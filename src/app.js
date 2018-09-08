@@ -5,6 +5,7 @@ const path = require('path')
 const morgan = require('morgan')
 const history = require('connect-history-api-fallback')
 const serveStatic = require('serve-static')
+const staticFileMiddleware = express.static('assets');
 
 // Passport/authentication
 const passport = require('passport')
@@ -16,11 +17,12 @@ const cookieParser = require('cookie-parser')
 
 const app = express();
 
-app.use(serveStatic(__dirname))
+app.use(staticFileMiddleware);
 app.use(history({
-  verbose: true
+  verbose: true,
+  disableDotRule: true
 }));
-app.use(serveStatic(__dirname))
+app.use(staticFileMiddleware);
 
 app.use(morgan('combined'))
 app.use(bodyParser.json())
