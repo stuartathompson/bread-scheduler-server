@@ -5,7 +5,7 @@ const path = require('path')
 const morgan = require('morgan')
 const history = require('connect-history-api-fallback')
 const serveStatic = require('serve-static')
-const staticFileMiddleware = express.static('assets');
+const staticFileMiddleware = express.static('http://city-scheduler-demo.herokuapp.com/');
 
 // Passport/authentication
 const passport = require('passport')
