@@ -1,6 +1,7 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const cors = require('cors')
+const path = require('path')
 const morgan = require('morgan')
 const history = require('connect-history-api-fallback')
 
@@ -13,8 +14,12 @@ const session = require('express-session')
 const cookieParser = require('cookie-parser')
 
 const app = express();
+const staticFileMiddleware = express.static(path.join(__dirname + '/dist'));
 
+app.use(staticFileMiddleware);
 app.use(history());
+app.use(staticFileMiddleware);
+
 app.use(morgan('combined'))
 app.use(bodyParser.json())
 app.use(cors())
