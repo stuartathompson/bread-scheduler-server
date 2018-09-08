@@ -9,6 +9,9 @@ var UsersSchema = new Schema({
   },
   username: {
     type: String
+  },
+  role: {
+    type: String
   }
 });
 

@@ -220,7 +220,8 @@ app.post('/search', (req, res) => {
 
 app.get('/records/:id', (req, res) => {
 	var db = req.db;
-	Records.findById(req.params.id, 'record_id description children date notes', function (error, record) {
+	Records.findById(req.params.id, '_id record_id description children date notes', function (error, record) {
+    console.log('updated...')
 	  if (error) { console.error(error); }
 	  res.send(record)
 	})
@@ -280,10 +281,12 @@ app.put('/records/:id', (req, res) => {
 	  record.description = req.body.description
     record.notes = req.body.notes
     record.children = req.body.children
+    console.log('record',record.children)
 	  record.save(function (error) {
 			if (error) {
 				console.log(error)
 			}
+      console.log('success')
 			res.send({
 				success: true
 			})
