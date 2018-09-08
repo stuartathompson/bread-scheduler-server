@@ -2,16 +2,19 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const cors = require('cors')
 const morgan = require('morgan')
+const history = require('connect-history-api-fallback')
 
-// require('./passport');
+// Passport/authentication
 const passport = require('passport')
 const LocalStrategy = require('passport-local').Strategy
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
 const session = require('express-session')
 const cookieParser = require('cookie-parser')
+
 const app = express();
 
+app.use(history());
 app.use(morgan('combined'))
 app.use(bodyParser.json())
 app.use(cors())
