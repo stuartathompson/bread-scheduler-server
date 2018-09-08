@@ -16,7 +16,10 @@ const cookieParser = require('cookie-parser')
 
 const app = express();
 
-app.use(history());
+app.use(serveStatic(__dirname))
+app.use(history({
+  verbose: true
+}));
 app.use(serveStatic(__dirname))
 
 app.use(morgan('combined'))
