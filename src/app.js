@@ -197,7 +197,7 @@ app.post('/records', loggedInOnly, (req, res) => {
   // Users.findById(uid)
   //   .populate()
   Records.find({})
-    .find({'owner.username': 'stuartathompson@gmail.com'})
+    .find({'owner.username': username})
     .sort({date:-1})
     .limit(limit)
     .skip(page * limit)
