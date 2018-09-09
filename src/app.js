@@ -54,16 +54,11 @@ passport.deserializeUser(function(userId, done) {
 });
 
 const local = new LocalStrategy( (username, password, next) => {
-  console.log('ok, looking?')
     Users.findOne({ username })
         .then(user => {
-          console.log('found undersname');
             if (!user || !user.validPassword(password)) {
-                console.log('fail')
-                next(true, false, {message: 'Incorrect email or password.'});
+              next(true, false, {message: 'Incorrect email or password.'});
             } else {
-              console.log('success, valid')
-
               next(null, user, {message: 'Logged In Successfully'});
             }
        })
@@ -104,7 +99,6 @@ app.post('/login', function(req, res, next){
       res.send({success: true, redirect: '/', token: token, username: user.username})
     }
 })(req, res, next);
-  console.log('outtie');
 });
 
 // function (req, res, next){
@@ -160,11 +154,9 @@ app.all("/logout", function(req, res) {
 });
 
 app.all("/login", function(req, res) {
-  console.log('Logging in....')
 });
 
 app.post("/auth", loggedInOnly, function(req, res) {
-  console.log('Made it to auth ....')
   res.send({success: true})
 });
 
@@ -255,7 +247,6 @@ app.post('/search', (req, res) => {
 app.get('/records/:id', (req, res) => {
 	var db = req.db;
 	Records.findById(req.params.id, '_id record_id description children date notes', function (error, record) {
-    console.log('updated...')
 	  if (error) { console.error(error); }
 	  res.send(record)
 	})
@@ -317,12 +308,10 @@ app.put('/records/:id', (req, res) => {
 	  record.description = req.body.description
     record.notes = req.body.notes
     record.children = req.body.children
-    console.log('record',record.children)
 	  record.save(function (error) {
 			if (error) {
 				console.log(error)
 			}
-      console.log('success')
 			res.send({
 				success: true
 			})
@@ -332,12 +321,10 @@ app.put('/records/:id', (req, res) => {
 
 app.delete('/records/:id', (req, res) => {
 	var db = req.db;
-  console.log(req.params.id)
 	Records.remove({
 		_id: req.params.id
 	}, function(err, post){
 		if (err) res.send(err)
-    console.log('ok')
 		res.send({
 			success: true
 		})
