@@ -6,6 +6,7 @@ const morgan = require('morgan')
 const history = require('connect-history-api-fallback')
 const serveStatic = require('serve-static')
 const staticFileMiddleware = express.static('http://city-scheduler-demo.herokuapp.com/');
+const ObjectId = require('mongoose').Types.ObjectId
 
 // Passport/authentication
 const passport = require('passport')
@@ -100,7 +101,7 @@ app.post('/login', function(req, res, next){
       var token = jwt.sign({ id: user._id }, 'supersecret', {
         expiresIn: 86400 // expires in 24 hours
       });
-      res.send({success: true, redirect: '/', token: token})
+      res.send({success: true, redirect: '/', token: token, username: user.username})
     }
 })(req, res, next);
   console.log('outtie');
@@ -197,14 +198,47 @@ const user = require('../routes/user');
 // app.use('/', passport.authenticate('jwt', {session: false}), user);
 
 
-app.get('/records', loggedInOnly, (req, res) => {
-  Records.find({}, 'record_id description date notes', function (error, records) {
-	  if (error) { console.error('ERROR',error); }
-	  res.send({
-      success: true,
-			records: records
-		})
-	}).sort({date:-1}).limit(10)
+app.post('/records', loggedInOnly, (req, res) => {
+  var page = parseInt(req.body.page) || 0;
+  var limit = parseInt(req.body.limit) || 15;
+  var username = req.body.username;
+  // Users.findById(uid)
+  //   .populate()
+  Records.find({})
+    .find({'owner.username': 'stuartathompson@gmail.com'})
+    .sort({date:-1})
+    .limit(limit)
+    .skip(page * limit)
+    .exec(function (err, records) {
+      res.send({
+        success: true,
+        records: records
+      })
+    })
+  //
+  // 'record_id description date notes', function (error, record) {
+  //   console.log('updated...')
+	//   if (error) { console.error(error); }
+	//   res.send({
+  //     success: true,
+  //     records: record
+  //   })
+	// })
+  // .sort({date:-1})
+  // .limit(limit)
+  // .skip(page * limit)
+
+  // console.log({owner: {username: username}})
+  // Records.findById('5b8d624c966967d64e37905a','record_id owner description date notes', function(error, records) { // ) , function (
+	//   if (error) { console.error('ERROR',error); }
+	//   res.send({
+  //     success: true,
+	// 		records: records
+	// 	})
+	// })
+    // .sort({date:-1})
+    // .limit(limit)
+    // .skip(page * limit)
 });
 
 app.post('/search', (req, res) => {
@@ -233,11 +267,13 @@ app.post('/add_record', (req, res) => {
 	var description = req.body.description;
   var notes = req.body.notes;
   var date = req.body.date;
+  var owner = { username: req.body.username };
 	var new_record = new Records({
 		record_id: record_id,
 		description: description,
     notes: notes,
-    date: date
+    date: date,
+    owner: owner
 	});
 
 	new_record.save(function (error) {

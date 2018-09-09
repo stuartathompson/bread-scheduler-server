@@ -3,7 +3,10 @@ var Schema = mongoose.Schema;
 var RecordChildren = require("../models/record_children");
 
 var RecordsSchema = new Schema({
-  record_id: String,
+  record_id: {
+    type: String,
+    required: true
+  },
   date: Date,
   children: [ RecordChildren.schema ],
   description: String,
@@ -14,8 +17,14 @@ var RecordsSchema = new Schema({
     ref: 'attachments'
   },
   owner: {
-    type: Schema.Types.ObjectId,
-    ref: 'users'
+    _id: {
+      type: Schema.Types.ObjectId,
+      ref: 'Users'
+    },
+    username: {
+      type: String,
+      required: true
+    }
   }
 });
 

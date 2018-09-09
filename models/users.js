@@ -5,10 +5,13 @@ var uniqueValidator = require('mongoose-unique-validator');
 
 var UsersSchema = new Schema({
   passwordHash: {
-    type: String
+    type: String,
+    required: true
   },
   username: {
-    type: String
+    type: String,
+    unique: true,
+    required: true
   },
   role: {
     type: String
