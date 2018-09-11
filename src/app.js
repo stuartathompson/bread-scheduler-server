@@ -199,8 +199,8 @@ app.post('/records', loggedInOnly, (req, res) => {
   Records.find({})
     .find({'owner.username': username})
     .sort({date:-1})
-    .limit(limit)
-    .skip(page * limit)
+    // .limit(limit)
+    // .skip(page * limit)
     .exec(function (err, records) {
       res.send({
         success: true,
