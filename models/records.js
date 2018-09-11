@@ -11,11 +11,11 @@ var RecordsSchema = new Schema({
   children: [ RecordChildren.schema ],
   description: String,
   notes: String,
-  associations: Array,
   attachments: {
     type: Schema.Types.ObjectId,
     ref: 'attachments'
   },
+  last_edited: Date,
   owner: {
     _id: {
       type: Schema.Types.ObjectId,

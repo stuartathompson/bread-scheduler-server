@@ -263,6 +263,7 @@ app.post('/add_record', (req, res) => {
 		record_id: record_id,
 		description: description,
     notes: notes,
+    last_edited: new Date(),
     date: date,
     owner: owner
 	});
@@ -309,6 +310,7 @@ app.put('/records/:id', (req, res) => {
     record.notes = req.body.notes
     record.children = req.body.children
     record.date = req.body.date
+    record.last_edited = new Date()
 	  record.save(function (error) {
 			if (error) {
 				console.log(error)
