@@ -189,7 +189,7 @@ const user = require('../routes/user');
 // app.use('/auth', auth);
 // app.use('/', passport.authenticate('jwt', {session: false}), user);
 
-
+// Get records
 app.post('/records', loggedInOnly, (req, res) => {
   var page = parseInt(req.body.page) || 0;
   var limit = parseInt(req.body.limit) || 15;
