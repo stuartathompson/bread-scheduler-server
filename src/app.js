@@ -308,6 +308,7 @@ app.put('/records/:id', (req, res) => {
 	  record.description = req.body.description
     record.notes = req.body.notes
     record.children = req.body.children
+    record.date = req.body.date
 	  record.save(function (error) {
 			if (error) {
 				console.log(error)
