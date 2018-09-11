@@ -42,9 +42,7 @@ var RecordChildren = require("../models/record_children");
 var Records = require("../models/records");
 var Users = require("../models/users");
 
-
 /* - Begin app - */
-
 passport.serializeUser(function(user, done) {
   done(null, user._id);
 });
@@ -196,12 +194,7 @@ app.post('/records', loggedInOnly, (req, res) => {
   var username = req.body.username;
   // Users.findById(uid)
   //   .populate()
-  Records.find({})
-    .find({'owner.username': username})
-    .sort({date:-1})
-    // .limit(limit)
-    // .skip(page * limit)
-    .exec(function (err, records) {
+  Records.find({'owner.username': username}, 'record_id description date notes last_edited owner', {sort: {'last_edited':-1}, limit: limit, skip : page * limit}, function (err, records) {
       res.send({
         success: true,
         records: records
