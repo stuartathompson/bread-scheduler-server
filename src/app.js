@@ -194,7 +194,7 @@ app.post('/records', loggedInOnly, (req, res) => {
   var username = req.body.username;
   // Users.findById(uid)
   //   .populate()
-  Records.find({'owner.username': username}, 'record_id description date notes last_edited owner', {sort: {'last_edited':-1}, limit: limit, skip : page * limit}, function (err, records) {
+  Records.find({'owner.username': username}, 'record_id description date notes last_edited', {sort: {'last_edited':-1}, limit: limit, skip : page * limit}, function (err, records) {
       res.send({
         success: true,
         records: records
