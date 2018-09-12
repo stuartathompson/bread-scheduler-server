@@ -193,9 +193,23 @@ app.post('/records', loggedInOnly, (req, res) => {
   var limit = parseInt(req.body.limit) || 15;
   var username = req.body.username;
   var fields = req.body.fields
+  var startDate = req.body.startDate;
+  var endDate = req.body.endDate;
+
+  var query = {'owner.username': username}
+
+  // Reset skip and limit if dates are set
+  if(startDate){
+    limit = 9999
+    skip = 0
+    query['date'] = { $gt: startDate, $lt: endDate }
+  }
+
+  console.log(query)
+
   // Users.findById(uid)
   //   .populate()
-  Records.find({'owner.username': username}, 'record_id description date notes last_edited ' + fields, {sort: {'last_edited':-1}, limit: limit, skip : page * limit}, function (err, records) {
+  Records.find(query, 'record_id description date notes last_edited ' + fields, {sort: {'last_edited':-1}, limit: limit, skip : page * limit}, function (err, records) {
       res.send({
         success: true,
         records: records
