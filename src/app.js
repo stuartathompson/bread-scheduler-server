@@ -238,7 +238,7 @@ app.post('/records', loggedInOnly, (req, res) => {
 
   // Users.findById(uid)
   //   .populate()
-  Records.find(query, 'record_id description date notes last_edited ' + fields, {sort: {'last_edited':-1}, limit: limit, skip : page * limit}, function (err, records) {
+  Records.find(query, 'record_id children description date notes last_edited ' + fields, {sort: {'last_edited':-1}, limit: limit, skip : page * limit}, function (err, records) {
       res.send({
         success: true,
         records: records
