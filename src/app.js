@@ -8,6 +8,12 @@ const serveStatic = require('serve-static')
 const staticFileMiddleware = express.static('http://city-scheduler-demo.herokuapp.com/');
 const ObjectId = require('mongoose').Types.ObjectId
 
+// Multer/Cloudinary file upload
+const cloudinary = require('cloudinary')
+const cloudinaryStorage = require('multer-storage-cloudinary')
+const multer = require('multer')
+// const fileUpload = require('express-fileupload')
+
 // Passport/authentication
 const passport = require('passport')
 const LocalStrategy = require('passport-local').Strategy
@@ -17,6 +23,8 @@ const session = require('express-session')
 const cookieParser = require('cookie-parser')
 
 const app = express();
+
+// app.use(fileUpload());
 
 app.use(staticFileMiddleware);
 app.use(history({
@@ -83,6 +91,29 @@ const loggedOutOnly = (req, res, next) => {
   if (req.isUnauthenticated()) next();
   else res.send({success: false, redirect: "/"});
 };
+
+
+/* STORAGE */
+cloudinary.config({
+  cloud_name: 'stuartathompson',
+  api_key: '623251582773842',
+  api_secret: 'wygwLcGTdofl-Ue1smlQAwnXHW4'
+})
+
+const storage = cloudinaryStorage({
+  cloudinary: cloudinary,
+  folder: 'city_scheduler_demo',
+  allowedFormats: ['jpg', 'png', 'pdf', 'jpeg', 'gif'],
+  filename: function (req, file, cb) {
+    cb(undefined, file.originalname)
+  }
+})
+
+const parser = multer({ storage: storage })
+
+// app.post('/upload',  function (req, res) {
+//   console.log(req.files)
+// })
 
 
 /* POST login */
@@ -205,8 +236,6 @@ app.post('/records', loggedInOnly, (req, res) => {
     query['date'] = { $gt: startDate, $lt: endDate }
   }
 
-  console.log(query)
-
   // Users.findById(uid)
   //   .populate()
   Records.find(query, 'record_id description date notes last_edited ' + fields, {sort: {'last_edited':-1}, limit: limit, skip : page * limit}, function (err, records) {
@@ -254,26 +283,59 @@ app.post('/search', (req, res) => {
 
 app.get('/records/:id', (req, res) => {
 	var db = req.db;
-	Records.findById(req.params.id, '_id record_id description children date notes', function (error, record) {
+	Records.findById(req.params.id, function (error, record) {
 	  if (error) { console.error(error); }
 	  res.send(record)
 	})
 })
 
+// app.post('/add_image', parser.single('file', 10), (req, res) => {
+app.post('/add_image', parser.array('file', 10), (req, res) => {
+  console.log('*****',req.files)
+  var cloudUploads = 0
+  var uploadLength = req.files.length
+  var response = {
+    success: true,
+    files: req.files
+  }
+  res.send(response)
+  // for(var file of req.files){
+  //   cloudinary.uploader
+  //     .upload_stream( (result) => {
+  //       console.log('result!', result)
+  //       response.files.push({
+  //         secure_url: result.secure_url,
+  //         filename: result.original_filename,
+  //         attachment_id: result.public_id,
+  //         resource_type: result.resource_type,
+  //         format: result.format
+  //       })
+  //       cloudUploads ++
+  //       if(cloudUploads === uploadLength) res.send(response)
+  //     })
+  //     .end( file.data )
+  //   }
+})
+
 app.post('/add_record', (req, res) => {
-	var db = req.db;
+
+  console.log('adding record')
+
+  var db = req.db;
 	var record_id = req.body.record_id;
 	var description = req.body.description;
   var notes = req.body.notes;
   var date = req.body.date;
   var owner = { username: req.body.username };
+  var attachments = req.body.attachments;
 	var new_record = new Records({
 		record_id: record_id,
 		description: description,
     notes: notes,
     last_edited: new Date(),
     date: date,
-    owner: owner
+    owner: owner,
+    attachments: attachments
 	});
 
 	new_record.save(function (error) {
@@ -311,20 +373,23 @@ app.put('/records/:id', (req, res) => {
 	var db = req.db;
 
   // Update this record
-	Records.findById(req.params.id, 'record_id description', function (error, record) {
+	Records.findById(req.params.id, function (error, record) {
 	  if (error) { console.error(error); }
 	  record.record_id = req.body.record_id
 	  record.description = req.body.description
     record.notes = req.body.notes
     record.children = req.body.children
     record.date = req.body.date
+    record.attachments = req.body.attachments
     record.last_edited = new Date()
 	  record.save(function (error) {
 			if (error) {
 				console.log(error)
 			}
+      console.log('record saved', record)
 			res.send({
-				success: true
+				success: true,
+        record: record
 			})
 		})
 	})

@@ -11,10 +11,13 @@ var RecordsSchema = new Schema({
   children: [ RecordChildren.schema ],
   description: String,
   notes: String,
-  attachments: {
-    type: Schema.Types.ObjectId,
-    ref: 'attachments'
-  },
+  attachments: [{
+    attachment_id: String,
+    secure_url: String,
+    filename: String,
+    resource_type: String,
+    format: String
+  }],
   last_edited: Date,
   owner: {
     _id: {

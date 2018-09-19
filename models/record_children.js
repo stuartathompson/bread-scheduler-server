@@ -15,7 +15,13 @@ var RecordChildrenSchema = new Schema({
   owner: {
     type: Schema.Types.ObjectId,
     ref: 'users'
-  }
+  },
+  attachments: [{
+    secure_url: String,
+    filename: String,
+    resource_type: String,
+    format: String
+  }]
 });
 
 var RecordChildren = mongoose.model("RecordChildren", RecordChildrenSchema);
