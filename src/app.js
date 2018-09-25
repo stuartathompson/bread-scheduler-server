@@ -36,7 +36,8 @@ app.use(staticFileMiddleware);
 app.use(morgan('combined'))
 app.use(bodyParser.json())
 app.use(cors())
-app.use(cookieParser('$2b$10$7ztOGXwtoFJHIRbGz3GTTedQaadosUxCY0xkRPOh10HHO620VqCB.'));
+const uniqueCookieKey = '$2b$10$7ztOGXwtoFJHIRbGz3GTTedQaadosUxCY0xkRPOh10HHO620VqCB.'
+app.use(cookieParser(uniqueCookieKey));
 app.use(session({ cookie: { maxAge: 60000 }}));
 app.use(passport.initialize())
 app.use(passport.session())
@@ -46,8 +47,7 @@ app.use(express.static('stylesheets'))
 const mongodb_conn_module = require('./mongodbConnModule');
 var db = mongodb_conn_module.connect();
 
-var RecordChildren = require("../models/record_children");
-var Records = require("../models/records");
+var Recipe = require("../models/recipe");
 var Users = require("../models/users");
 
 /* - Begin app - */
@@ -111,11 +111,6 @@ const storage = cloudinaryStorage({
 
 const parser = multer({ storage: storage })
 
-// app.post('/upload',  function (req, res) {
-//   console.log(req.files)
-// })
-
-
 /* POST login */
 app.post('/login', function(req, res, next){
   passport.authenticate('local', function(err, user, info){
@@ -127,32 +122,8 @@ app.post('/login', function(req, res, next){
       });
       res.send({success: true, redirect: '/', token: token, username: user.username})
     }
-})(req, res, next);
+  })(req, res, next);
 });
-
-// function (req, res, next){
-//   console.log('reached sign in post')
-//   console.log(req.body)
-//   passport.authenticate('local',{session: false}, (err, user, info) => {
-//     console.log('fail??',err, user, info)
-//     if( err || !user ){
-//       return res.status(400).json({
-//         message: 'Your email or password was wrong.',
-//         user: user
-//       });
-//     }
-//
-//     req.login(user, {session: false}, (err) => {
-//       if (err) {
-//         res.send(err);
-//       }
-//
-//       // generate signed json web token
-//       const token = jwt.sign(user, 'your_jwt_secret');
-//       return res.json({user, token});
-//     });
-//   })(req, res);
-// });
 
 app.post("/register", (req, res, next) => {
   const { username, password } = req.body;
@@ -163,11 +134,6 @@ app.post("/register", (req, res, next) => {
         expiresIn: 86400 // expires in 24 hours
       });
       res.status(200).send({ success: true, redirect: '/', token: token });
-
-      // req.login(user, err => {
-      //   if (err) next(err);
-      //   else res.redirect("/");
-      // });
     })
     .catch(err => {
       if (err.name === "ValidationError") {
@@ -189,37 +155,10 @@ app.post("/auth", loggedInOnly, function(req, res) {
   res.send({success: true})
 });
 
-
-// app.post('/register', function(req, res, next) {
-//   bcrypt.genSalt(10, function(err, salt){
-//     if (err) return next(err);
-//     bcrypt.hash(req.body.password, salt, function(err, hash) {
-//
-//       var newUser = new Users({
-//         username: req.body.username,
-//         password: hash
-//       });
-//
-//       newUser.save(function (error) {
-//         if (error) {
-//           console.log(error)
-//         }
-//         res.send({
-//           success: true
-//         });
-//       });
-//     });
-//   });
-// });
-
-// const auth = require('../routes/auth');
 const user = require('../routes/user');
 
-// app.use('/auth', auth);
-// app.use('/', passport.authenticate('jwt', {session: false}), user);
-
 // Get records
-app.post('/records', loggedInOnly, (req, res) => {
+app.post('/recipes', (req, res) => {
   var page = parseInt(req.body.page) || 0;
   var limit = parseInt(req.body.limit) || 15;
   var username = req.body.username;
@@ -227,52 +166,29 @@ app.post('/records', loggedInOnly, (req, res) => {
   var startDate = req.body.startDate;
   var endDate = req.body.endDate;
 
-  var query = {'owner.username': username}
-
-  // Reset skip and limit if dates are set
-  if(startDate){
-    limit = 9999
-    skip = 0
-    query['date'] = { $gt: startDate, $lt: endDate }
-  }
+  var query = {} //'owner.username': username}
+  //
+  // // Reset skip and limit if dates are set
+  // if(startDate){
+  //   limit = 9999
+  //   skip = 0
+  //   query['date'] = { $gt: startDate, $lt: endDate }
+  // }
 
   // Users.findById(uid)
   //   .populate()
-  Records.find(query, 'record_id children description date notes last_edited ' + fields, {sort: {'last_edited':-1}, limit: limit, skip : page * limit}, function (err, records) {
+  Recipe.find(query, 'title description', {sort: {'last_edited':-1}, limit: limit, skip : page * limit}, function (err, recipes) {
+    console.log('response', recipes)
       res.send({
         success: true,
-        records: records
+        recipes: recipes
       })
     })
-  //
-  // 'record_id description date notes', function (error, record) {
-  //   console.log('updated...')
-	//   if (error) { console.error(error); }
-	//   res.send({
-  //     success: true,
-  //     records: record
-  //   })
-	// })
-  // .sort({date:-1})
-  // .limit(limit)
-  // .skip(page * limit)
-
-  // console.log({owner: {username: username}})
-  // Records.findById('5b8d624c966967d64e37905a','record_id owner description date notes', function(error, records) { // ) , function (
-	//   if (error) { console.error('ERROR',error); }
-	//   res.send({
-  //     success: true,
-	// 		records: records
-	// 	})
-	// })
-    // .sort({date:-1})
-    // .limit(limit)
-    // .skip(page * limit)
 });
 
 app.post('/search', (req, res) => {
   query = req.body.record_id == '' ? {} : {record_id: new RegExp(req.body.record_id,'gi')}
-  Records.find(query, 'record_id description date notes', function (error, records) {
+  Recipe.find(query, 'record_id description date notes', function (error, records) {
 	  if (error) { console.error('ERROR',error); }
 	  res.send({
       success: true,
@@ -281,17 +197,16 @@ app.post('/search', (req, res) => {
 	}).sort({date:-1})
 });
 
-app.get('/records/:id', (req, res) => {
+app.get('/recipe/:id', (req, res) => {
 	var db = req.db;
-	Records.findById(req.params.id, function (error, record) {
+	Recipe.findById(req.params.id, function (error, recipe) {
 	  if (error) { console.error(error); }
-	  res.send(record)
+    console.log('ok', recipe)
+	  res.send(recipe)
 	})
 })
 
-// app.post('/add_image', parser.single('file', 10), (req, res) => {
 app.post('/add_image', parser.array('file', 10), (req, res) => {
-  console.log('*****',req.files)
   var cloudUploads = 0
   var uploadLength = req.files.length
   var response = {
@@ -299,44 +214,12 @@ app.post('/add_image', parser.array('file', 10), (req, res) => {
     files: req.files
   }
   res.send(response)
-  // for(var file of req.files){
-  //   cloudinary.uploader
-  //     .upload_stream( (result) => {
-  //       console.log('result!', result)
-  //       response.files.push({
-  //         secure_url: result.secure_url,
-  //         filename: result.original_filename,
-  //         attachment_id: result.public_id,
-  //         resource_type: result.resource_type,
-  //         format: result.format
-  //       })
-  //       cloudUploads ++
-  //       if(cloudUploads === uploadLength) res.send(response)
-  //     })
-  //     .end( file.data )
-  //   }
 })
 
 app.post('/add_record', (req, res) => {
-
-  console.log('adding record')
-
+  req.body.last_edited = new Date()
   var db = req.db;
-	var record_id = req.body.record_id;
-	var description = req.body.description;
-  var notes = req.body.notes;
-  var date = req.body.date;
-  var owner = { username: req.body.username };
-  var attachments = req.body.attachments;
-	var new_record = new Records({
-		record_id: record_id,
-		description: description,
-    notes: notes,
-    last_edited: new Date(),
-    date: date,
-    owner: owner,
-    attachments: attachments
-	});
+	var new_record = new Recipe(req.body);
 
 	new_record.save(function (error) {
 		if (error) {
@@ -348,32 +231,12 @@ app.post('/add_record', (req, res) => {
 	})
 })
 
-
-// app.post('/add_post', (req, res) => {
-// 	var db = req.db;
-// 	var title = req.body.title;
-// 	var description = req.body.description;
-// 	var new_post = new Post({
-// 		title: title,
-// 		description: description
-// 	})
-//
-// 	new_post.save(function (error) {
-// 		if (error) {
-// 			console.log(error)
-// 		}
-// 		res.send({
-// 			success: true
-// 		})
-// 	})
-// })
-
 // Update record
 app.put('/records/:id', (req, res) => {
 	var db = req.db;
 
   // Update this record
-	Records.findById(req.params.id, function (error, record) {
+	Recipe.findById(req.params.id, function (error, record) {
 	  if (error) { console.error(error); }
 	  record.record_id = req.body.record_id
 	  record.description = req.body.description
@@ -386,7 +249,6 @@ app.put('/records/:id', (req, res) => {
 			if (error) {
 				console.log(error)
 			}
-      console.log('record saved', record)
 			res.send({
 				success: true,
         record: record
@@ -397,7 +259,7 @@ app.put('/records/:id', (req, res) => {
 
 app.delete('/records/:id', (req, res) => {
 	var db = req.db;
-	Records.remove({
+	Recipe.remove({
 		_id: req.params.id
 	}, function(err, post){
 		if (err) res.send(err)
@@ -406,7 +268,6 @@ app.delete('/records/:id', (req, res) => {
 		})
 	})
 })
-
 
 app.get('*', function(req, res){
   res.status(404);

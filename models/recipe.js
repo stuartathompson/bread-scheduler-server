@@ -1,0 +1,43 @@
+var mongoose = require("mongoose");
+var Schema = mongoose.Schema;
+
+var RecipeSchema = new Schema({
+  title: {
+    type: String
+  },
+  description: String,
+  date: Date,
+  last_edited: Date,
+  ingredients: [{
+      amount: String,
+      ingredient: String,
+      measurement: String
+  }],
+  steps: [{
+      category: String,
+      step: String,
+      ingredients: [{
+        amount: String,
+        ingredient: String,
+        measurement: String
+      }]
+  }],
+  attachments: [{
+    attachment_id: String,
+    secure_url: String,
+    filename: String,
+    resource_type: String,
+    format: String
+  }],
+  owner: {
+    _id: {
+      type: Schema.Types.ObjectId,
+      ref: 'Users'
+    },
+    username: {
+      type: String
+    }
+  }
+});
+
+module.exports = mongoose.model("Recipe", RecipeSchema);
