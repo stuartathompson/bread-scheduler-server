@@ -177,7 +177,7 @@ app.post('/recipes', (req, res) => {
 
   // Users.findById(uid)
   //   .populate()
-  Recipe.find(query, 'title description', {sort: {'last_edited':-1}, limit: limit, skip : page * limit}, function (err, recipes) {
+  Recipe.find(query, 'title description totalRecipeLength', {sort: {'last_edited':-1}, limit: limit, skip : page * limit}, function (err, recipes) {
     console.log('response', recipes)
       res.send({
         success: true,
@@ -202,7 +202,10 @@ app.get('/recipe/:id', (req, res) => {
 	Recipe.findById(req.params.id, function (error, recipe) {
 	  if (error) { console.error(error); }
     console.log('ok', recipe)
-	  res.send(recipe)
+	  res.send({
+      success: true,
+      recipe: recipe
+    })
 	})
 })
 
@@ -232,26 +235,30 @@ app.post('/add_record', (req, res) => {
 })
 
 // Update record
-app.put('/records/:id', (req, res) => {
+app.put('/recipe/:id', (req, res) => {
 	var db = req.db;
 
+  console.log(req.params.id, req.body.title)
+
   // Update this record
-	Recipe.findById(req.params.id, function (error, record) {
+	Recipe.findById(req.params.id, function (error, recipe) {
 	  if (error) { console.error(error); }
-	  record.record_id = req.body.record_id
-	  record.description = req.body.description
-    record.notes = req.body.notes
-    record.children = req.body.children
-    record.date = req.body.date
-    record.attachments = req.body.attachments
-    record.last_edited = new Date()
-	  record.save(function (error) {
+    console.log('recipe', recipe, 'recipe')
+    // Reassign
+    for(var param in req.body){
+      recipe[param] = req.body[param]
+    }
+    // recipe = req.body
+    // // Change last edited
+    recipe.last_edited = new Date()
+    // Save
+	  recipe.save(function (error) {
 			if (error) {
 				console.log(error)
 			}
 			res.send({
 				success: true,
-        record: record
+        recipe: recipe
 			})
 		})
 	})
