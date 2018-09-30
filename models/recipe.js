@@ -6,11 +6,13 @@ var RecipeSchema = new Schema({
     type: String
   },
   description: String,
+  shortDescription: String,
   totalRecipeLength: Number,
   date: Date,
   last_edited: Date,
   ingredients: [{
       item: String,
+      totalFlour: Number,
       ingredients: [{
         amount: String,
         ingredient: String,
@@ -30,7 +32,7 @@ var RecipeSchema = new Schema({
         timeMax: String
       }]
   }],
-  attachments: [{
+  images: [{
     attachment_id: String,
     secure_url: String,
     filename: String,

@@ -102,9 +102,10 @@ cloudinary.config({
 
 const storage = cloudinaryStorage({
   cloudinary: cloudinary,
-  folder: 'city_scheduler_demo',
+  folder: 'bread_scheduler',
   allowedFormats: ['jpg', 'png', 'pdf', 'jpeg', 'gif'],
   filename: function (req, file, cb) {
+    console.log('filename')
     cb(undefined, file.originalname)
   }
 })
@@ -177,7 +178,7 @@ app.post('/recipes', (req, res) => {
 
   // Users.findById(uid)
   //   .populate()
-  Recipe.find(query, 'title description totalRecipeLength', {sort: {'last_edited':-1}, limit: limit, skip : page * limit}, function (err, recipes) {
+  Recipe.find(query, 'title description images shortDescription totalRecipeLength', {sort: {'last_edited':-1}, limit: limit, skip : page * limit}, function (err, recipes) {
     console.log('response', recipes)
       res.send({
         success: true,
@@ -210,8 +211,7 @@ app.get('/recipe/:id', (req, res) => {
 })
 
 app.post('/add_image', parser.array('file', 10), (req, res) => {
-  var cloudUploads = 0
-  var uploadLength = req.files.length
+  console.log('uplaods')
   var response = {
     success: true,
     files: req.files
@@ -237,17 +237,18 @@ app.post('/add_record', (req, res) => {
 // Update record
 app.put('/recipe/:id', (req, res) => {
 	var db = req.db;
-
   console.log(req.params.id, req.body.title)
 
   // Update this record
 	Recipe.findById(req.params.id, function (error, recipe) {
 	  if (error) { console.error(error); }
-    console.log('recipe', recipe, 'recipe')
     // Reassign
     for(var param in req.body){
-      recipe[param] = req.body[param]
+      if (param.match(/^\_/) === null) {
+        recipe[param] = req.body[param]
+      }
     }
+    console.log(recipe)
     // recipe = req.body
     // // Change last edited
     recipe.last_edited = new Date()
