@@ -36,7 +36,7 @@ app.use(staticFileMiddleware);
 app.use(morgan('combined'))
 app.use(bodyParser.json())
 app.use(cors())
-const uniqueCookieKey = '$2b$10$7ztOGXwtoFJHIRbGz3GTTedQaadosUxCY0xkRPOh10HHO620VqCB.'
+const uniqueCookieKey = process.env.BREADCOOKIE
 app.use(cookieParser(uniqueCookieKey));
 app.use(session({ cookie: { maxAge: 60000 }}));
 app.use(passport.initialize())
