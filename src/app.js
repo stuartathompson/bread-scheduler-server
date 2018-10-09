@@ -75,7 +75,7 @@ passport.use("local",local);
 
 const loggedInOnly = (req, res, next) => {
   var token = req.header('Authorization').split(' ')[1];
-  var payload = jwt.decode(token, 'supersecret');
+  var payload = jwt.decode(token, process.env.JWTSECRET);
   if (payload) {
     // res.send({success: true});
     // console.log('going next true', next)
@@ -96,8 +96,8 @@ const loggedOutOnly = (req, res, next) => {
 /* STORAGE */
 cloudinary.config({
   cloud_name: 'stuartathompson',
-  api_key: '623251582773842',
-  api_secret: 'wygwLcGTdofl-Ue1smlQAwnXHW4'
+  api_key: process.env.CLOUDINARYAPIKEY,
+  api_secret: process.env.CLOUDINARYSECRET
 })
 
 const storage = cloudinaryStorage({
@@ -118,7 +118,7 @@ app.post('/login', function(req, res, next){
     if(err || !user){
       res.send({success: false})
     } else {
-      var token = jwt.sign({ id: user._id }, 'supersecret', {
+      var token = jwt.sign({ id: user._id }, process.env.JWTSECRET, {
         expiresIn: 86400 // expires in 24 hours
       });
       res.send({success: true, redirect: '/', token: token, username: user.username})
@@ -126,12 +126,13 @@ app.post('/login', function(req, res, next){
   })(req, res, next);
 });
 
-app.post("/register", (req, res, next) => {
+app.post("/register", loggedInOnly, (req, res, next) => {
   const { username, password } = req.body;
+  console.log(username, password)
   Users.create({ username, password })
     .then(user => {
       // create a token
-      var token = jwt.sign({ id: user._id }, 'supersecret', {
+      var token = jwt.sign({ id: user._id }, process.env.JWTSECRET, {
         expiresIn: 86400 // expires in 24 hours
       });
       res.status(200).send({ success: true, redirect: '/', token: token });
