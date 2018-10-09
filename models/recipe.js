@@ -10,6 +10,7 @@ var RecipeSchema = new Schema({
   totalRecipeLength: Number,
   date: Date,
   last_edited: Date,
+  numberOfLoaves: Number,
   ingredients: [{
       item: String,
       totalFlour: Number,
