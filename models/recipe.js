@@ -11,6 +11,7 @@ var RecipeSchema = new Schema({
   date: Date,
   last_edited: Date,
   numberOfLoaves: Number,
+  ratings: [Number, Number, Number, Number, Number],
   ingredients: [{
       item: String,
       totalFlour: Number,
@@ -30,7 +31,8 @@ var RecipeSchema = new Schema({
       }],
       timeBreak: [{
         timeMin: String,
-        timeMax: String
+        timeMax: String,
+        activePassive: String
       }]
   }],
   images: [{
