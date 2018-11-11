@@ -1,5 +1,11 @@
 console.log(process.env.BREADCOOKIE)
 
+// Environmental var assistance
+if (process.env.NODE_ENV !== 'production') {
+  const dotenv = require('dotenv')
+  dotenv.load()
+}
+
 const express = require('express')
 const bodyParser = require('body-parser')
 const cors = require('cors')
