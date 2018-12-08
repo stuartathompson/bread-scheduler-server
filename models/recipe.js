@@ -32,8 +32,12 @@ var RecipeSchema = new Schema({
       timeBreak: [{
         timeMin: String,
         timeMax: String,
+        timeIdeal: String,
         activePassive: String
       }]
+  }],
+  recommendedTimes: [{
+    startTime: String
   }],
   images: [{
     attachment_id: String,

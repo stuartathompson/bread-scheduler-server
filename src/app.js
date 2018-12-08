@@ -1,4 +1,3 @@
-console.log(process.env.BREADCOOKIE)
 
 // Environmental var assistance
 if (process.env.NODE_ENV !== 'production') {
@@ -113,7 +112,7 @@ const storage = cloudinaryStorage({
   folder: 'bread_scheduler',
   allowedFormats: ['jpg', 'png', 'pdf', 'jpeg', 'gif'],
   filename: function (req, file, cb) {
-    console.log('filename')
+    // console.log('filename')
     cb(undefined, file.originalname)
   }
 })
@@ -136,7 +135,7 @@ app.post('/login', function(req, res, next){
 
 app.post("/register", loggedInOnly, (req, res, next) => {
   const { username, password } = req.body;
-  console.log(username, password)
+  // console.log(username, password)
   Users.create({ username, password })
     .then(user => {
       // create a token
@@ -172,7 +171,7 @@ app.post('/recipes', (req, res) => {
   var page = parseInt(req.body.page) || 0;
   var limit = parseInt(req.body.limit) || 15;
   var username = req.body.username;
-  var fields = req.body.fields
+  var fields = req.body.fields;
   var startDate = req.body.startDate;
   var endDate = req.body.endDate;
 
@@ -187,8 +186,8 @@ app.post('/recipes', (req, res) => {
 
   // Users.findById(uid)
   //   .populate()
-  Recipe.find(query, 'title description images shortDescription totalRecipeLength', {sort: {'last_edited':-1}, limit: limit, skip : page * limit}, function (err, recipes) {
-    console.log('response', recipes)
+  Recipe.find(query, 'title description recommendedTimes images shortDescription totalRecipeLength', {sort: {'last_edited':-1}, limit: limit, skip : page * limit}, function (err, recipes) {
+    // console.log('response', recipes)
       res.send({
         success: true,
         recipes: recipes
@@ -199,7 +198,7 @@ app.post('/recipes', (req, res) => {
 app.post('/search', (req, res) => {
   query = req.body.record_id == '' ? {} : {record_id: new RegExp(req.body.record_id,'gi')}
   Recipe.find(query, 'record_id description date notes', function (error, records) {
-	  if (error) { console.error('ERROR',error); }
+	  // if (error) { console.error('ERROR',error); }
 	  res.send({
       success: true,
 			records: records
@@ -210,8 +209,8 @@ app.post('/search', (req, res) => {
 app.get('/recipe/:id', (req, res) => {
 	var db = req.db;
 	Recipe.findById(req.params.id, function (error, recipe) {
-	  if (error) { console.error(error); }
-    console.log('ok', recipe)
+	  // if (error) { console.error(error); }
+    // console.log('ok', recipe)
 	  res.send({
       success: true,
       recipe: recipe
@@ -220,7 +219,7 @@ app.get('/recipe/:id', (req, res) => {
 })
 
 app.post('/add_image', parser.array('file', 10), (req, res) => {
-  console.log('uplaods')
+  // console.log('uplaods')
   var response = {
     success: true,
     files: req.files
@@ -235,7 +234,7 @@ app.post('/add_record', (req, res) => {
 
 	new_record.save(function (error) {
 		if (error) {
-			console.log(error)
+			// console.log(error)
 		}
     res.send({
 			success: true
@@ -246,25 +245,25 @@ app.post('/add_record', (req, res) => {
 // Update record
 app.put('/recipe/:id', (req, res) => {
 	var db = req.db;
-  console.log(req.params.id, req.body.title)
+  // console.log(req.params.id, req.body.title)
 
   // Update this record
 	Recipe.findById(req.params.id, function (error, recipe) {
-	  if (error) { console.error(error); }
+	  // if (error) { console.error(error); }
     // Reassign
     for(var param in req.body){
       if (param.match(/^\_/) === null) {
         recipe[param] = req.body[param]
       }
     }
-    console.log(recipe)
+    // console.log(recipe)
     // recipe = req.body
     // // Change last edited
     recipe.last_edited = new Date()
     // Save
 	  recipe.save(function (error) {
 			if (error) {
-				console.log(error)
+				// console.log(error)
 			}
 			res.send({
 				success: true,
