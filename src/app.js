@@ -10,6 +10,7 @@ const bodyParser = require('body-parser')
 const cors = require('cors')
 const path = require('path')
 const morgan = require('morgan')
+
 const history = require('connect-history-api-fallback')
 const serveStatic = require('serve-static')
 const staticFileMiddleware = express.static('http://city-scheduler-demo.herokuapp.com/');
