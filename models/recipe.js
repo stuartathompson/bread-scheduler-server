@@ -54,7 +54,8 @@ var RecipeSchema = new Schema({
     username: {
       type: String
     }
-  }
+  },
+  hide: Boolean
 });
 
 module.exports = mongoose.model("Recipe", RecipeSchema);

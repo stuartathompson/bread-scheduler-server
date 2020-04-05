@@ -1,3 +1,9 @@
+/*
+// In Dev
+1. open terminal, run mongod
+2. go to client, npm start
+3. go to server, npm start
+*/
 
 // Environmental var assistance
 if (process.env.NODE_ENV !== 'production') {
@@ -5,6 +11,7 @@ if (process.env.NODE_ENV !== 'production') {
   dotenv.load()
 }
 
+// Start code here
 const express = require('express')
 const bodyParser = require('body-parser')
 const cors = require('cors')
@@ -15,6 +22,8 @@ const history = require('connect-history-api-fallback')
 const serveStatic = require('serve-static')
 const staticFileMiddleware = express.static('http://city-scheduler-demo.herokuapp.com/');
 const ObjectId = require('mongoose').Types.ObjectId
+
+console.log({ObjectId})
 
 // Multer/Cloudinary file upload
 const cloudinary = require('cloudinary')
@@ -176,7 +185,13 @@ app.post('/recipes', (req, res) => {
   var startDate = req.body.startDate;
   var endDate = req.body.endDate;
 
-  var query = {} //'owner.username': username}
+  console.log({
+    page, limit, username, fields, startDate, endDate
+  })
+
+  var query = {
+
+  } //'owner.username': username}
   //
   // // Reset skip and limit if dates are set
   // if(startDate){
@@ -188,7 +203,7 @@ app.post('/recipes', (req, res) => {
   // Users.findById(uid)
   //   .populate()
   Recipe.find(query, 'title description recommendedTimes images shortDescription totalRecipeLength', {sort: {'last_edited':-1}, limit: limit, skip : page * limit}, function (err, recipes) {
-    // console.log('response', recipes)
+    console.log('response', recipes)
       res.send({
         success: true,
         recipes: recipes
