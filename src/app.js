@@ -190,7 +190,7 @@ app.post('/recipes', (req, res) => {
   })
 
   var query = {
-    hide: false
+    // hide: false
   } //'owner.username': username}
   //
   // // Reset skip and limit if dates are set
