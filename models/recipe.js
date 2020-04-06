@@ -39,6 +39,7 @@ var RecipeSchema = new Schema({
   recommendedTimes: [{
     startTime: String
   }],
+  localImage: String,
   images: [{
     attachment_id: String,
     secure_url: String,
