@@ -202,7 +202,7 @@ app.post('/recipes', (req, res) => {
 
   // Users.findById(uid)
   //   .populate()
-  Recipe.find(query, 'title description recommendedTimes images shortDescription totalRecipeLength localImage', {sort: {'last_edited':-1}, limit: limit, skip : page * limit}, function (err, recipes) {
+  Recipe.find(query, 'title description recommendedTimes images shortDescription totalRecipeLength localImage localThumb', {sort: {'last_edited':-1}, limit: limit, skip : page * limit}, function (err, recipes) {
     console.log('response', recipes)
       res.send({
         success: true,

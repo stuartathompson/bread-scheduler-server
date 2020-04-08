@@ -40,6 +40,7 @@ var RecipeSchema = new Schema({
     startTime: String
   }],
   localImage: String,
+  localThumb: String,
   images: [{
     attachment_id: String,
     secure_url: String,
