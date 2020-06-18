@@ -185,10 +185,6 @@ app.post('/recipes', (req, res) => {
   var startDate = req.body.startDate;
   var endDate = req.body.endDate;
 
-  console.log({
-    page, limit, username, fields, startDate, endDate
-  })
-
   var query = {
     hide: false
   } //'owner.username': username}
@@ -210,6 +206,22 @@ app.post('/recipes', (req, res) => {
       })
     })
 });
+
+app.post('/ios', function(req, res){
+  var page = 0
+  var limit = 50
+
+  var query = {
+    hide: false
+  }
+
+  Recipe.find(query, 'title description recommendedTimes shortDescription description totalRecipeLength localImage ingredients steps recommendedTimes', {sort: {'last_edited':-1}, limit: limit, skip : page * limit}, function (err, recipes) {
+    console.log('response', recipes)
+      res.send(
+        recipes
+      )
+    })
+})
 
 app.post('/search', (req, res) => {
   query = req.body.record_id == '' ? {} : {record_id: new RegExp(req.body.record_id,'gi')}
