@@ -34,7 +34,8 @@ var RecipeSchema = new Schema({
         timeMax: String,
         timeIdeal: String,
         activePassive: String
-      }]
+      }],
+      image: String
   }],
   recommendedTimes: [{
     startTime: String
