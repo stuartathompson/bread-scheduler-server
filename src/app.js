@@ -39,6 +39,11 @@ const bcrypt = require('bcrypt')
 const session = require('express-session')
 const cookieParser = require('cookie-parser')
 
+// Emailer
+const nodemailer = require('nodemailer')
+const { body,validationResult } = require('express-validator/check')
+const { sanitizeBody } = require('express-validator/filter')
+
 const app = express();
 
 // app.use(fileUpload());
@@ -161,6 +166,46 @@ app.post("/register", loggedInOnly, (req, res, next) => {
       } else next(err);
     });
 });
+
+
+app.post('/app-signup', [
+  body('email').isEmail()
+], (req, res) => {
+  const errors = validationResult(req)
+  if (!errors.isEmpty()) {
+    return res.status(422).json({ errors: errors.array() })
+  }
+
+  const { email } = req.body
+
+  var transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: 'breadscheduler@gmail.com',
+      pass: process.env.EMAILPWORD
+    }
+  })
+
+  var mailOptions = {
+    from: email,
+    to: 'breadscheduler@gmail.com',
+    subject: 'I would like to be reminded',
+    text: email
+  }
+
+console.log(process.env.EMAILPWORD)
+
+console.log(mailOptions)
+  transporter.sendMail(mailOptions, function(error, info){
+    if (error) {
+      console.log(error);
+      res.send({success: false, err: error})
+    } else {
+      console.log('Email sent: ' + info.response);
+      res.send({success: true})
+    }
+  })
+})
 
 app.all("/logout", function(req, res) {
   req.logout();
